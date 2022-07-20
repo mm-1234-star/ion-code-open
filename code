@@ -682,7 +682,7 @@ async def 인형뽑기(ctx):
 
     results = random.choices(minerals, weights=weights, k=1)
 
-    await ctx.reply(results)
+    await ctx.reply(results[0])
 
     
 
@@ -698,7 +698,7 @@ async def 인(ctx):
 
     results = random.choices(minerals, weights=weights, k=1)
 
-    await ctx.reply(results)
+    await ctx.reply(results[0])
 
     
 
@@ -716,7 +716,7 @@ async def 자판기(ctx):
 
     results = random.choices(minerals, weights=weights, k=1)
 
-    await ctx.reply(results)
+    await ctx.reply(results[0])
 
 
 
@@ -736,7 +736,7 @@ async def 자(ctx):
 
     results = random.choices(minerals, weights=weights, k=1)
 
-    await ctx.reply(results)
+    await ctx.reply(results[0])
 
 
 
