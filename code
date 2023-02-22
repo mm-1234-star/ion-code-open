@@ -1,5 +1,7 @@
 import discord
 import random
+import tweepy
+import io
 from PIL import Image, ImageDraw, ImageFont
 import requests
 import json
@@ -18,27 +20,34 @@ async def on_ready():
 
 @bot.command()
 async def 포켓몬퀴즈(ctx):
+    # 랜덤하게 포켓몬 선택
     pokemon_name = random.choice(pokemon_list)
 
-    pokemon_url = f"https://pokeapi.co/api/v2/pokemon-species/{pokemon_name}"
+    # 선택된 포켓몬 이미지 URL 가져오기
+    pokemon_url = f"https://pokeapi.co/api/v2/pokemon/{pokemon_name}"
+    response = requests.get(pokemon_url)
+    data = json.loads(response.text)
     image_url = data['sprites']['front_default']
-    pokemon_response = requests.get(pokemon_url)
-    pokemon_data = json.loads(pokemon_response.text)
-    pokemon_kor_name = pokemon_data['names'][10]['name']
 
-    embed = discord.Embed(title="오늘의 포켓몬은 뭘까아~~~요??", description=f"- 오박사")
+    # 한글 이름 가져오기
+    species_url = data['species']['url']
+    species_response = requests.get(species_url)
+    species_data = json.loads(species_response.text)
+    for name in species_data['names']:
+        if name['language']['name'] == 'ko':
+            pokemon_kor_name = name['name'].lower()
+            break
+
+    embed = discord.Embed(title="오늘의 포켓몬은 뭘까아~~~요??", description=f"- 오박사", color=0x00FFFF)
     embed.set_image(url=image_url)
     await ctx.send(embed=embed)
 
     def check(msg):
         return msg.author == ctx.author and msg.channel == ctx.channel
-
     try:
+        # 사용자가 입력한 이름과 실제 포켓몬 이름 비교
         answer = await bot.wait_for('message', timeout=30.0, check=check)
-        if answer() == pokemon_name.lower():
-            await ctx.send(f"{ctx.author.mention} 정답!")
-        else:
-            await ctx.send(f"{ctx.author.mention} 오답! 정답은 {pokemon_name}! 포켓몬마스터가 되기엔 한참 멀었구나!")
+        await ctx.send(f'정답은 {pokemon_kor_name}!')
     except asyncio.TimeoutError:
         await ctx.send("저런, 시간초과란다")
 
@@ -90,17 +99,59 @@ async def 보노보노피피티(ctx, text: discord.Option(str)):
 
     # Set the text color
     color = (255, 255, 255)
+
+    # Set the text content and position
     draw = ImageDraw.Draw(bg_image)
     text_content = text
     text_width, text_height = draw.textsize(text_content, font=font)
     x = (bg_image.width - text_width) / 2
     y = (bg_image.height - text_height) / 2
 
+    # Draw the text on the image
     draw.text((x, y), text_content, fill=color, font=font)
 
+    # Save the new image to a file
     new_image_path = 'new_image.png'
     bg_image.save(new_image_path)
 
+    # Send the new image to the Discord channel
     await ctx.respond(file=discord.File(new_image_path))
 
-bot.run('token')
+@bot.slash_command()
+async def 뭔가신성해짐(ctx, message: discord.Option(str)):
+    converted = message.replace("나", "이여")
+    converted = converted.replace("너", "이")
+    converted = converted.replace("당신", "자네")
+    converted = converted.replace("우리", "여기")
+    converted = converted.replace("나의", "내")
+    converted = converted.replace("네", "니")
+    converted = converted.replace("그", "그 자")
+    converted = converted.replace("우리의", "여기의")
+    converted = converted.replace("이여", "이로다")
+    converted = converted.replace("이로다", "이로소이다")
+    converted = converted.replace("이니", "이오")
+    converted = converted.replace("다", "니라")
+    converted = converted.replace("길", "시되")
+    converted = converted.replace("대신에", "되")
+    converted = converted.replace("요", "니라")
+    
+    embed = discord.Embed(title=converted, color=0x00FFFF)
+    await ctx.respond(embed=embed)
+
+@bot.slash_command()
+async def 뭔가메스가키(ctx, message: discord.Option(str)):
+    converted = message.replace("거냐", "야?♡")
+    converted = converted.replace("다", "다라구~허접♡")
+    converted = converted.replace("당신", "너같은 허접")
+    converted = converted.replace("너", "너같은 바보")
+    converted = converted.replace("정말", "완~전")
+    converted = converted.replace("네", "네~♡")
+    converted = converted.replace("?", "~?♡")
+    converted = converted.replace("!", "~!!♡")
+    converted = converted.replace("ㅋ", "w")
+    converted = converted.replace("요", "~")
+    
+    embed = discord.Embed(title=f"허접♡{converted}~~www 완전 최저♡", color=0x00FFFF)
+    await ctx.respond(embed=embed)
+
+bot.run(token)
