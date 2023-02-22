@@ -1,6 +1,5 @@
 import discord
 import random
-import tweepy
 import io
 from PIL import Image, ImageDraw, ImageFont
 import requests
